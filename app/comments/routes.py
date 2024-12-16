@@ -1,3 +1,5 @@
+import json
+
 from flask import request, jsonify
 
 from app.comments import bp
@@ -15,9 +17,11 @@ def create_comment():
     Returns:
         _type_: Success or failure message as json
     """
-    text = request.form.get("text", None)
-    user_id = request.form.get("user_id", None)
-    parent_id = request.form.get("parent_id", None)
+    request_data = json.loads(request.data)
+    
+    text = request_data.get("text", None)
+    user_id = request_data.get("user_id", None)
+    parent_id = request_data.get("parent_id", None)
     
     if text is None:
         return jsonify({"error": "text field is required"}), 400

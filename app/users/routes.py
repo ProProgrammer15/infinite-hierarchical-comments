@@ -1,3 +1,5 @@
+import json
+
 from flask import request, jsonify, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import or_
@@ -22,10 +24,12 @@ def login_user():
     Returns:
         _type_: Login success or failure message as json
     """
-    username = request.form.get("username", None)
-    email = request.form.get("email", None)
-    password = request.form.get("password", None)
-    remember_me = request.form.get("remember_me", False)
+    request_data = json.loads(request.data)
+    
+    username = request_data.get("username", None)
+    email = request_data.get("email", None)
+    password = request_data.get("password", None)
+    remember_me = request_data.get("remember_me", False)
     
     if not username or email:
         return jsonify({"error": "Username or email is required to login"}), 400
@@ -63,9 +67,11 @@ def signup_user():
     Returns:
         _type_: User registration success or failure message
     """
-    username = request.form.get("username", None)
-    email = request.form.get("email", None)
-    password = request.form.get("password", None)
+    request_data = json.loads(request.data)
+    
+    username = request_data.get("username", None)
+    email = request_data.get("email", None)
+    password = request_data.get("password", None)
     
     if not username:
         return jsonify({"error": "Username is required"}), 400
