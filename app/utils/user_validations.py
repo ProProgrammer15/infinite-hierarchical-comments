@@ -45,32 +45,3 @@ def is_valid_username(username):
     """
     return username.isalnum() and 5 <= len(username) <= 20
 
-
-def check_username_validations(username):
-    if not username:
-        return jsonify({"error": "Username is required"}), 400
-    
-    if not is_valid_username(username):
-        return jsonify({"error": "Username must be alphanumeric and between 5 and 20 characters"}), 400
-    
-    return username
-
-def check_email_validations(email):
-    if not email:
-        return jsonify({"error": "Email is required"}), 400
-    
-    if not is_valid_email(email):
-        return jsonify({"error": "Invalid email format"}), 400
-    
-    return email
-    
-    
-def check_password_validations(password):
-    if not password:
-        return jsonify({"error": "Password is required"}), 400
-    
-    if not is_valid_password(password):
-        return jsonify({"error": "Password must be 8-20 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character"}), 400
-    
-    return password
-
