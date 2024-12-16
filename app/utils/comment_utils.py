@@ -27,7 +27,7 @@ def build_tree(comment):
         "id": comment.id,
         "user_id": comment.user_id,
         "text": comment.text,
-        # "created_at": comment.created_at,
+        "created_at": comment.posted_at,
         # recursively calls the function if there are any replies
         "replies": [build_tree(reply) for reply in comment.replies],
     }

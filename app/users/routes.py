@@ -1,5 +1,4 @@
-from flask import request, jsonify, session, flash, redirect, url_for
-from flask_jwt_extended import create_access_token
+from flask import request, jsonify, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import or_
 
@@ -9,10 +8,7 @@ from app.extensions import db
 from app.utils.user_validations import (
     is_valid_email,
     is_valid_username,
-    is_valid_password,
-    check_username_validations,
-    check_email_validations,
-    check_password_validations
+    is_valid_password
 )
 
 
@@ -51,10 +47,9 @@ def login_user():
     if remember_me:
         session.permanent = True
     
-    access_token = create_access_token(identity=user.id)
     session["user_id"] = user.id
     
-    return jsonify({"success": "Logged in successfully", "access_token": access_token})
+    return jsonify({"success": "Logged in successfully"})
 
 
 @bp.route("/signup", methods=["POST"])
@@ -104,16 +99,3 @@ def signup_user():
         raise e
     
     return jsonify({"success": "User created successfully"})
-
-@bp.route("/logout", methods=["POST"])
-def logout_user():
-    """Logout the user and clears the session
-
-    Returns:
-        _type_: None
-    """
-    session.clear()
-    
-    flash("You have been logged out")
-    
-    return redirect(url_for("users.login_user"))
