@@ -8,10 +8,25 @@ services:
     container_name: flask-app
     ports:
       - "5000:5000"
+    env_file:
+      - .env
     environment:
       - FLASK_APP=app
       - FLASK_ENV=development
     volumes:
       - .:/app
-    command: flask run --host=0.0.0.0
+      
+  react-app:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: react-app
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/frontend-app
+    environment:
+      - NODE_ENV=development
+    stdin_open: true
+    tty: true
     

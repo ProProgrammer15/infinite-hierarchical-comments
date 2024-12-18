@@ -1,0 +1,375 @@
+{
+  "swagger": "2.0",
+  "info": {
+      "title": "Infinite Heirarchical Comments",
+      "description": "API documentation for Infinite Heirarchical Comments",
+      "version": "1.0.0"
+  },
+  "basePath": "/",
+  "schemes": ["http", "https"],
+  "securityDefinitions": {
+      "BearerAuth": {
+          "type": "apiKey",
+          "name": "Authorization",
+          "in": "header",
+          "description": "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\""
+      }
+  },
+  "paths": {
+      "/users/login": {
+  "post": {
+      "tags": ["Authentication"],
+      "summary": "Login a user",
+      "description": "Validates user credentials using username and password or email and password, and returns JWT tokens if successful.",
+      "parameters": [
+          {
+              "name": "body",
+              "in": "body",
+              "required": "True",
+              "schema": {
+                  "type": "object",
+                  "properties": {
+                      "username": {
+                          "type": "string",
+                          "description": "The username of the user (optional, if email is provided)."
+                      },
+                      "email": {
+                          "type": "string",
+                          "format": "email",
+                          "description": "The email of the user (optional, if username is provided)."
+                      },
+                      "password": {
+                          "type": "string",
+                          "description": "The user's password (required)."
+                      }
+                  },
+                  "required": ["password"]
+              }
+          }
+      ],
+      "responses": {
+          "200": {
+              "description": "Login successful",
+              "schema": {
+                  "type": "object",
+                  "properties": {
+                      "access_token": {"type": "string", "description": "JWT access token"},
+                      "refresh_token": {"type": "string", "description": "JWT refresh token"},
+                      "user": {
+                          "type": "object",
+                          "properties": {
+                              "id": {"type": "integer"},
+                              "username": {"type": "string"},
+                              "email": {"type": "string"}
+                          }
+                      }
+                  }
+              }
+          },
+          "400": {
+              "description": "Login failed due to invalid credentials or missing fields",
+              "schema": {
+                  "type": "object",
+                  "properties": {
+                      "error": {"type": "string"}
+                  }
+              }
+          }
+      }
+  }
+},
+      "/users/signup": {
+          "post": {
+              "tags": ["Authentication"],
+              "summary": "Register a new user",
+              "description": "Creates a new user if the username or email doesn't already exist.",
+              "parameters": [
+                  {
+                      "name": "body",
+                      "in": "body",
+                      "required": "True",
+                      "schema": {
+                          "type": "object",
+                          "properties": {
+                              "username": {"type": "string", "description": "The username"},
+                              "email": {"type": "string", "format": "email", "description": "The email"},
+                              "password": {"type": "string", "description": "The password"}
+                          },
+                          "required": ["username", "email", "password"]
+                      }
+                  }
+              ],
+              "responses": {
+                  "200": {
+                      "description": "User registered successfully",
+                      "schema": {
+                          "type": "object",
+                          "properties": {
+                              "success": {"type": "string", "description": "Success message"}
+                          }
+                      }
+                  },
+                  "400": {
+                      "description": "Registration failed",
+                      "schema": {
+                          "type": "object",
+                          "properties": {
+                              "error": {"type": "string"}
+                          }
+                      }
+                  }
+              }
+          }
+      },
+      "/users/refresh": {
+          "post": {
+              "tags": ["Authentication"],
+              "summary": "Refresh access token",
+              "description": "Generates a new access token using the refresh token.",
+              "responses": {
+                  "200": {
+                      "description": "Token refreshed",
+                      "schema": {
+                          "type": "object",
+                          "properties": {
+                              "access_token": {"type": "string", "description": "New JWT access token"}
+                          }
+                      }
+                  }
+              }
+          }
+      },
+      "/comments/create": {
+  "post": {
+      "tags": ["Comments"],
+      "summary": "Create a new comment",
+      "description": "Validates the comment text and user ID, then creates a new comment. Optionally links to a parent comment.",
+      "parameters": [
+          {
+              "name": "body",
+              "in": "body",
+              "required": "True",
+              "schema": {
+                  "type": "object",
+                  "properties": {
+                      "text": {
+                          "type": "string",
+                          "description": "The text content of the comment."
+                      },
+                      "user_id": {
+                          "type": "integer",
+                          "description": "The ID of the user creating the comment."
+                      },
+                      "parent_id": {
+                          "type": "integer",
+                          "description": "Optional. The ID of the parent comment if this is a reply."
+                      }
+                  },
+                  "required": ["text", "user_id"]
+              }
+          }
+      ],
+      "security": [
+          {
+              "BearerAuth": []
+          }
+      ],
+      "responses": {
+          "201": {
+              "description": "Comment created successfully",
+              "schema": {
+                  "type": "object",
+                  "properties": {
+                      "success": {
+                          "type": "string",
+                          "example": "Comment created successfully"
+                      }
+                  }
+              }
+          },
+          "400": {
+              "description": "Validation error or user/comment not found",
+              "schema": {
+                  "type": "object",
+                  "properties": {
+                      "error": {
+                          "type": "string",
+                          "example": "User doesn't exist"
+                      }
+                  }
+              }
+          },
+          "401": {
+              "description": "Unauthorized: Missing or invalid token",
+              "schema": {
+                  "type": "object",
+                  "properties": {
+                      "msg": {
+                          "type": "string",
+                          "example": "Missing Authorization Header"
+                      }
+                  }
+              }
+          }
+      }
+  }
+},
+"/comments/list": {
+  "get": {
+      "tags": ["Comments"],
+      "summary": "Get comments in a tree-based hierarchy",
+      "description": "Fetches all comments and organizes them into a tree-based hierarchical structure.",
+      "responses": {
+          "200": {
+              "description": "Comments list retrieved successfully",
+              "schema": {
+                  "type": "object",
+                  "properties": {
+                      "comments": {
+                          "type": "array",
+                          "description": "List of comments in a tree format.",
+                          "items": {
+                              "type": "object",
+                              "properties": {
+                                  "id": {
+                                      "type": "integer",
+                                      "description": "Comment ID"
+                                  },
+                                  "text": {
+                                      "type": "string",
+                                      "description": "The content of the comment"
+                                  },
+                                  "user_id": {
+                                      "type": "integer",
+                                      "description": "ID of the user who created the comment"
+                                  },
+                                  "parent_id": {
+                                      "type": ["integer", "null"],
+                                      "description": "ID of the parent comment (null if root comment)"
+                                  },
+                                  "children": {
+                                      "type": "array",
+                                      "description": "List of child comments in a nested structure.",
+                                      "items": {
+                                          "type": "object",
+                                          "properties": {
+                                              "id": {
+                                                  "type": "integer",
+                                                  "description": "Child comment ID"
+                                              },
+                                              "text": {
+                                                  "type": "string",
+                                                  "description": "Child comment content"
+                                              },
+                                              "user_id": {
+                                                  "type": "integer",
+                                                  "description": "ID of the user who created the child comment"
+                                              },
+                                              "parent_id": {
+                                                  "type": ["integer", "null"],
+                                                  "description": "Parent comment ID"
+                                              },
+                                              "children": {
+                                                  "type": "array",
+                                                  "description": "Nested child comments.",
+                                                  "items": {
+                                                      "type": "object"
+                                                  }
+                                              }
+                                          }
+                                      }
+                                  }
+                              }
+                          }
+                      }
+                  }
+              }
+          },
+          "500": {
+              "description": "Internal server error",
+              "schema": {
+                  "type": "object",
+                  "properties": {
+                      "error": {
+                          "type": "string",
+                          "example": "An unexpected error occurred."
+                      }
+                  }
+              }
+          }
+      }
+  }
+},
+"/comments/delete/{pk}": {
+  "delete": {
+      "tags": ["Comments"],
+      "summary": "Delete a comment",
+      "description": "Deletes a comment after validating that it belongs to the current user.",
+      "parameters": [
+          {
+              "name": "pk",
+              "in": "path",
+              "required": "True",
+              "type": "integer",
+              "description": "The primary key (ID) of the comment to delete."
+          }
+      ],
+      "security": [
+          {
+              "BearerAuth": []
+          }
+      ],
+      "responses": {
+          "200": {
+              "description": "Comment deleted successfully",
+              "schema": {
+                  "type": "object",
+                  "properties": {
+                      "success": {
+                          "type": "string",
+                          "example": "Comment deleted successfully"
+                      }
+                  }
+              }
+          },
+          "403": {
+              "description": "Unauthorized: The current user is not the owner of the comment",
+              "schema": {
+                  "type": "object",
+                  "properties": {
+                      "error": {
+                          "type": "string",
+                          "example": "You are not authorized to delete this comment"
+                      }
+                  }
+              }
+          },
+          "404": {
+              "description": "Comment not found",
+              "schema": {
+                  "type": "object",
+                  "properties": {
+                      "error": {
+                          "type": "string",
+                          "example": "Comment does not exist"
+                      }
+                  }
+              }
+          },
+          "401": {
+              "description": "Unauthorized: Missing or invalid Bearer token",
+              "schema": {
+                  "type": "object",
+                  "properties": {
+                      "msg": {
+                          "type": "string",
+                          "example": "Missing Authorization Header"
+                      }
+                  }
+              }
+          }
+      }
+  }
+}
+  }
+}
