@@ -1,4 +1,4 @@
-from app.marshmallow import SQLAlchemyAutoSchema, validates, ValidationError
+from app.marshmallow import SQLAlchemyAutoSchema, validates, ValidationError, fields
 from app.models.comments import Comment
 
 
@@ -6,6 +6,8 @@ class CommentSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Comment
         include_fk = True
+    
+    replies = fields.Nested('self', many=True)
 
     @validates("text")
     def validate_text(self, value):

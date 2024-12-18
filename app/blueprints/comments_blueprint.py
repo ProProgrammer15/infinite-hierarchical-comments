@@ -10,6 +10,7 @@ from app.schemas.comment_schema import CommentSchema
 
 comments_blueprint = Blueprint("comments", __name__)
 comment_schema = CommentSchema()
+comments_schema = CommentSchema(many=True)
 
 
 @comments_blueprint.route('/create', methods=["POST"])
@@ -65,8 +66,9 @@ def get_comments():
         _type_: Comments list as json
     """
     comments = get_comments_tree()
+    serialized_comments = comments_schema.dump(comments)
     
-    return jsonify({"comments": comments}), 200
+    return jsonify({"comments": serialized_comments}), 200
 
 
 @comments_blueprint.route('/delete/<int:pk>', methods=["DELETE"])
